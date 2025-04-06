@@ -1,63 +1,70 @@
-# Wallify
+# Wallify - Modern Wallpaper Web App
 
-A modern wallpaper gallery app with an admin panel for managing wallpapers and categories.
+A modern responsive wallpaper web app built with React, Next.js, and Tailwind CSS.
 
 ## Features
 
-- Browse wallpapers by category
-- View wallpaper details and download
-- Admin panel for managing wallpapers and categories
-- Upload images directly or use URLs
+- Grid layout displaying wallpaper images in a clean, aesthetic way
+- Category filters (Nature, Abstract, Animals, Space)
 - Dark/light mode toggle
+- Hover effects on wallpapers (zoom in and overlay)
+- Modal for fullscreen preview when a wallpaper is clicked
 - Responsive design for all devices
 
-## Deployment with Vercel
+## Project Structure
 
-Follow these steps to deploy Wallify to Vercel:
+```
+wallfy/
+├── src/
+│   ├── app/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── CategorySidebar.tsx
+│   │   ├── Header.tsx
+│   │   ├── ThemeProvider.tsx
+│   │   ├── ThemeToggle.tsx
+│   │   ├── WallpaperCard.tsx
+│   │   ├── WallpaperGrid.tsx
+│   │   └── WallpaperModal.tsx
+│   ├── data/
+│   │   └── wallpapers.ts
+│   └── lib/
+├── package.json
+├── tailwind.config.js
+├── tsconfig.json
+└── README.md
+```
 
-1. **Install the Vercel CLI**:
-   ```bash
-   npm install -g vercel
-   ```
+## Setup and Installation
 
-2. **Login to Vercel**:
-   ```bash
-   vercel login
-   ```
-
-3. **Deploy to Vercel**:
-   ```bash
-   vercel
-   ```
-
-4. **For production deployment**:
-   ```bash
-   vercel --prod
-   ```
-
-## Local Development
-
-To run the project locally:
-
-1. **Install dependencies**:
+1. Install [Node.js](https://nodejs.org/)
+2. Clone the repository
+3. Install dependencies:
    ```bash
    npm install
    ```
-
-2. **Start development server**:
+4. Run the development server:
    ```bash
-   npm start
+   npm run dev
    ```
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-3. Open your browser and visit `http://localhost:3000`
+## Future Enhancements
 
-## How It Works
+- Connect to an API or CMS for dynamic wallpaper content
+- Add search functionality
+- Implement user accounts for favorites/collections
+- Add download functionality for wallpapers
+- Implement pagination or infinite scroll for large wallpaper collections
 
-- The app uses client-side JavaScript and localStorage to manage data
-- Images can be uploaded directly and are stored as base64 strings
-- No backend server is required for basic functionality
-- All changes in the admin panel are automatically reflected in the main site
+## Technologies Used
 
-## License
-
-MIT 
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+- Lucide React icons
+- next-themes 
