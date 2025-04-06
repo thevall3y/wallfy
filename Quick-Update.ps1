@@ -1,9 +1,15 @@
 # Quick Update Script for GitHub/Vercel
 # --------------------------------
-# EDIT THESE VALUES:
-$username = "YOUR_GITHUB_USERNAME"
-$token = "YOUR_GITHUB_TOKEN"  # Generate at https://github.com/settings/tokens
-$repo = "wallfy"               # Your repository name
+# User Credentials
+if (-not $username) {
+    $username = Read-Host "Enter your GitHub username"
+}
+if (-not $token) {
+    $secureToken = Read-Host "Enter your GitHub token" -AsSecureString
+    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
+    $token = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+}
+$repo = "wallfy"  # Your repository name
 # --------------------------------
 
 # Create authentication header
@@ -51,4 +57,5 @@ Update-File "admin.html"
 Update-File "vercel.json"
 
 Write-Host "`nAll updates completed!" -ForegroundColor Cyan
-Write-Host "Vercel should automatically deploy your changes within a few minutes." -ForegroundColor Cyan 
+Write-Host "Vercel should automatically deploy your changes within a few minutes." -ForegroundColor Cyan
+Write-Host "Your new ad script has been added to index.html and deployed." -ForegroundColor Green 
