@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallify - Modern Wallpaper App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .dark {
+      background-color: #111827;
+      color: #f9fafb;
+    }
+    .wallpaper-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .wallpaper-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .wallpaper-card:hover .overlay {
+      opacity: 1;
+    }
+    .wallpaper-card:hover .image {
+      transform: scale(1.1);
+    }
+    .wallpaper-card:hover .info {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .modal {
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 border-b bg-white/95 backdrop-blur shadow-sm">
+    <div class="container mx-auto flex h-16 items-center justify-between px-4">
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold tracking-tight">Wallify</h1>
+      </div>
+      <button id="themeToggle" class="p-2 rounded-md hover:bg-gray-100" aria-label="Toggle theme">
+        <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+        <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="min-h-screen">
+    <div class="flex flex-col md:flex-row">
+      <!-- Category Sidebar -->
+      <aside class="w-full md:w-64 p-4 border-r md:min-h-[calc(100vh-4rem)]">
+        <h2 class="text-lg font-semibold mb-4">Categories</h2>
+        <div class="space-y-1" id="categories">
+          <!-- Categories will be inserted here by JavaScript -->
+        </div>
+        <div class="mt-8 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+          <h3 class="text-sm font-medium mb-1">Mobile Wallpapers</h3>
+          <p class="text-xs text-gray-600 dark:text-gray-300">All wallpapers are optimized for smartphone screens with 1080×1920 resolution.</p>
+        </div>
+      </aside>
+
+      <!-- Wallpaper Grid -->
+      <div class="flex-1 p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="wallpaperGrid">
+          <!-- Wallpapers will be inserted here by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // DOM elements
+    const categoriesContainer = document.getElementById('categories');
+    const wallpaperGrid = document.getElementById('wallpaperGrid');
+    const themeToggle = document.getElementById('themeToggle');
+    const sunIcon = document.getElementById('sunIcon');
+    const moonIcon = document.getElementById('moonIcon');
+
+    // Default wallpapers data
+    const defaultWallpapers = [
+      // Nature wallpapers
+      {
+        id: 'nature-1',
+        title: 'Mountain Lake',
+        imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+        category: 'Nature',
+        size: { width: 1080, height: 1920 },
+        downloads: 128,
+      },
+      {
+        id: 'nature-2',
+        title: 'Forest Path',
+        imageUrl: 'https://images.unsplash.com/photo-1511497584788-876760111969',
+        category: 'Nature',
+        size: { width: 1080, height: 1920 },
+        downloads: 95,
+      },
+      {
+        id: 'nature-3',
+        title: 'Autumn Colors',
+        imageUrl: 'https://images.unsplash.com/photo-1507783548227-544c3b8fc065',
+        category: 'Nature',
+        size: { width: 1080, height: 1920 },
+        downloads: 152,
+      },
+      {
+        id: 'nature-4',
+        title: 'Coastal Sunset',
+        imageUrl: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843',
+        category: 'Nature',
+        size: { width: 1080, height: 1920 },
+        downloads: 114,
+      },
+      // Abstract wallpapers
+      {
+        id: 'abstract-1',
+        title: 'Color Burst',
+        imageUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab',
+        category: 'Abstract',
+        size: { width: 1080, height: 1920 },
+        downloads: 243,
+      },
+      {
+        id: 'abstract-2',
+        title: 'Fluid Waves',
+        imageUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3',
+        category: 'Abstract',
+        size: { width: 1080, height: 1920 },
+        downloads: 187,
+      },
+      {
+        id: 'abstract-3',
+        title: 'Geometric Shapes',
+        imageUrl: 'https://images.unsplash.com/photo-1553356084-58ef4a67b2a7',
+        category: 'Abstract',
+        size: { width: 1080, height: 1920 },
+        downloads: 163,
+      },
+      {
+        id: 'abstract-4',
+        title: 'Digital Brushstrokes',
+        imageUrl: 'https://images.unsplash.com/photo-1567359781514-3b964e2b04d6',
+        category: 'Abstract',
+        size: { width: 1080, height: 1920 },
+        downloads: 119,
+      },
+      // Animals wallpapers
+      {
+        id: 'animals-1',
+        title: 'Lion King',
+        imageUrl: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d',
+        category: 'Animals',
+        size: { width: 1080, height: 1920 },
+        downloads: 276,
+      },
+      {
+        id: 'animals-2',
+        title: 'Ocean Life',
+        imageUrl: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00',
+        category: 'Animals',
+        size: { width: 1080, height: 1920 },
+        downloads: 104,
+      },
+      {
+        id: 'animals-3',
+        title: 'Bird of Paradise',
+        imageUrl: 'https://images.unsplash.com/photo-1444464666168-49d633b86797',
+        category: 'Animals',
+        size: { width: 1080, height: 1920 },
+        downloads: 85,
+      },
+      {
+        id: 'animals-4',
+        title: 'Wolf in Snow',
+        imageUrl: 'https://images.unsplash.com/photo-1564466809058-bf4114d55352',
+        category: 'Animals',
+        size: { width: 1080, height: 1920 },
+        downloads: 198,
+      },
+      // Space wallpapers
+      {
+        id: 'space-1',
+        title: 'Galaxy Clusters',
+        imageUrl: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564',
+        category: 'Space',
+        size: { width: 1080, height: 1920 },
+        downloads: 328,
+      },
+      {
+        id: 'space-2',
+        title: 'Nebula Cloud',
+        imageUrl: 'https://images.unsplash.com/photo-1465101162946-4377e57745c3',
+        category: 'Space',
+        size: { width: 1080, height: 1920 },
+        downloads: 215,
+      },
+      {
+        id: 'space-3',
+        title: 'Milky Way',
+        imageUrl: 'https://images.unsplash.com/photo-1539593395743-7da5ee10ff07',
+        category: 'Space',
+        size: { width: 1080, height: 1920 },
+        downloads: 294,
+      },
+      {
+        id: 'space-4',
+        title: 'Planets Aligned',
+        imageUrl: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5',
+        category: 'Space',
+        size: { width: 1080, height: 1920 },
+        downloads: 157,
+      },
+    ];
+
+    // Default categories data
+    const defaultCategories = ['All', 'Nature', 'Abstract', 'Animals', 'Space'];
+
+    // Current state
+    let currentCategory = 'All';
+    let isDarkMode = localStorage.getItem('darkMode') === 'true';
+    let wallpapersData = [];
+    let categoriesData = [];
+
+    // Load wallpapers from localStorage
+    function loadWallpapersFromStorage() {
+      const savedWallpapers = localStorage.getItem('wallpapers');
+      if (savedWallpapers) {
+        const parsed = JSON.parse(savedWallpapers);
+        if (parsed && parsed.length > 0) {
+          return parsed;
+        }
+      }
+      // If no wallpapers in localStorage or empty array, use defaults
+      localStorage.setItem('wallpapers', JSON.stringify(defaultWallpapers));
+      return defaultWallpapers;
+    }
+
+    // Load categories from localStorage
+    function loadCategoriesFromStorage() {
+      const savedCategories = localStorage.getItem('categories');
+      if (savedCategories) {
+        // Make sure 'All' is the first category
+        let storedCategories = JSON.parse(savedCategories);
+        if (storedCategories && storedCategories.length > 0) {
+          if (!storedCategories.includes('All')) {
+            storedCategories = ['All', ...storedCategories];
+          } else {
+            // Move 'All' to the front if it exists but isn't first
+            const allIndex = storedCategories.indexOf('All');
+            if (allIndex > 0) {
+              storedCategories.splice(allIndex, 1);
+              storedCategories.unshift('All');
+            }
+          }
+          return storedCategories;
+        }
+      }
+      // If no categories in localStorage or empty array, use defaults
+      localStorage.setItem('categories', JSON.stringify(defaultCategories.filter(c => c !== 'All')));
+      return defaultCategories;
+    }
+
+    // Initialize download counts from localStorage
+    function initializeDownloadCounts() {
+      const savedDownloads = localStorage.getItem('wallpaperDownloads');
+      if (savedDownloads) {
+        const downloadsData = JSON.parse(savedDownloads);
+        // Update download counts in wallpapers array
+        wallpapersData.forEach(wallpaper => {
+          if (downloadsData[wallpaper.id] !== undefined) {
+            wallpaper.downloads = downloadsData[wallpaper.id];
+          }
+        });
+      }
+    }
+    
+    // Save download counts to localStorage
+    function saveDownloadCounts() {
+      const downloadsData = {};
+      wallpapersData.forEach(wallpaper => {
+        downloadsData[wallpaper.id] = wallpaper.downloads;
+      });
+      localStorage.setItem('wallpaperDownloads', JSON.stringify(downloadsData));
+    }
+
+    // Render categories
+    function renderCategories() {
+      categoriesContainer.innerHTML = '';
+      categoriesData.forEach(category => {
+        const button = document.createElement('button');
+        button.className = `w-full text-left px-3 py-2 rounded-md transition-colors ${
+          currentCategory === category
+            ? 'bg-blue-600 text-white'
+            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+        }`;
+        button.textContent = category;
+        button.addEventListener('click', (e) => {
+          e.preventDefault(); // Prevent default action
+          currentCategory = category;
+          renderCategories();
+          renderWallpapers();
+          return false; // Prevent event bubbling
+        });
+        categoriesContainer.appendChild(button);
+      });
+    }
+
+    // Render wallpapers
+    function renderWallpapers() {
+      wallpaperGrid.innerHTML = '';
+      
+      const filteredWallpapers = currentCategory === 'All' 
+        ? wallpapersData 
+        : wallpapersData.filter(wallpaper => wallpaper.category === currentCategory);
+      
+      filteredWallpapers.forEach(wallpaper => {
+        const card = document.createElement('div');
+        card.className = 'wallpaper-card relative overflow-hidden group rounded-lg shadow-md bg-white dark:bg-gray-800';
+        card.setAttribute('data-id', wallpaper.id);
+        
+        card.innerHTML = `
+          <div class="aspect-w-9 aspect-h-16 overflow-hidden">
+            <img src="${wallpaper.imageUrl}?auto=format&fit=crop&w=500&q=80" 
+                alt="${wallpaper.title}" 
+                class="image w-full h-full object-cover transition-transform duration-300">
+            <div class="overlay absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 flex items-center justify-center">
+              <button class="view-button bg-white/80 hover:bg-white text-gray-900 font-medium py-2 px-4 rounded-lg">
+                View
+              </button>
+            </div>
+          </div>
+          <div class="info p-3 bg-white dark:bg-gray-800 transition-all duration-300">
+            <h3 class="font-medium text-sm mb-1 truncate">${wallpaper.title}</h3>
+            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>${wallpaper.category}</span>
+              <span>${wallpaper.downloads} downloads</span>
+            </div>
+          </div>
+        `;
+        
+        wallpaperGrid.appendChild(card);
+        
+        // Add click event to the entire card
+        card.addEventListener('click', function() {
+          const clickedWallpaper = wallpapersData.find(w => w.id === this.getAttribute('data-id'));
+          if (clickedWallpaper) {
+            showWallpaperModal(clickedWallpaper);
+          }
+        });
+      });
+      
+      // If no wallpapers found for this category
+      if (filteredWallpapers.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.className = 'col-span-full p-12 text-center text-gray-500 dark:text-gray-400';
+        emptyMessage.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-lg font-medium">No wallpapers found</p>
+          <p>There are no wallpapers in this category yet.</p>
+        `;
+        wallpaperGrid.appendChild(emptyMessage);
+      }
+    }
+
+    // Increment download counter
+    function incrementDownload(id) {
+      const wallpaper = wallpapersData.find(w => w.id === id);
+      if (wallpaper) {
+        wallpaper.downloads++;
+        saveDownloadCounts();
+        renderWallpapers(); // Update UI to reflect new download count
+      }
+    }
+
+    // Download wallpaper function
+    function downloadWallpaper(url, title) {
+      // Create a temporary container to show status
+      const statusContainer = document.createElement('div');
+      statusContainer.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+      statusContainer.textContent = 'Opening image in new tab...';
+      document.body.appendChild(statusContainer);
+      
+      // Remove the status after 3 seconds
+      setTimeout(() => {
+        statusContainer.remove();
+      }, 3000);
+      
+      // For Imgur and other sites that prevent direct downloads
+      // Open the image in a new tab where the user can save it
+      window.open(url, '_blank');
+      
+      // Alternative approach - create an invisible link and click it
+      // This works for some URLs but not all
+      try {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+        link.target = '_blank';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.log('Download fallback used');
+      }
+    }
+
+    // Show wallpaper modal
+    function showWallpaperModal(wallpaper) {
+      // Create modal element
+      const modal = document.createElement('div');
+      modal.className = 'modal fixed inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm opacity-0';
+      modal.setAttribute('id', 'wallpaperModal');
+      
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-lg max-w-3xl w-full overflow-hidden shadow-xl relative">
+          <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="text-lg font-bold">${wallpaper.title}</h3>
+            <button class="close-modal p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="flex flex-col md:flex-row">
+            <div class="md:w-1/2 p-4">
+              <img src="${wallpaper.imageUrl}?auto=format&fit=crop&w=600&h=800&q=80" 
+                   alt="${wallpaper.title}" 
+                   class="w-full h-auto object-cover rounded-md">
+            </div>
+            <div class="md:w-1/2 p-4">
+              <div class="mb-4">
+                <h4 class="text-sm font-medium mb-1">Category</h4>
+                <p class="text-gray-700 dark:text-gray-300">${wallpaper.category}</p>
+              </div>
+              <div class="mb-4">
+                <h4 class="text-sm font-medium mb-1">Resolution</h4>
+                <p class="text-gray-700 dark:text-gray-300">${wallpaper.size.width} × ${wallpaper.size.height} pixels</p>
+              </div>
+              <div class="mb-4">
+                <h4 class="text-sm font-medium mb-1">Downloads</h4>
+                <p class="text-gray-700 dark:text-gray-300">${wallpaper.downloads}</p>
+              </div>
+              <div class="mt-6">
+                <button 
+                   class="download-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                   data-id="${wallpaper.id}"
+                   data-url="${wallpaper.imageUrl}"
+                   data-title="${wallpaper.title}">
+                  Download
+                  <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Fade in animation
+      setTimeout(() => {
+        modal.classList.add('opacity-100');
+      }, 10);
+      
+      // Handle close button click
+      modal.querySelector('.close-modal').addEventListener('click', hideWallpaperModal);
+      
+      // Handle download button click
+      modal.querySelector('.download-btn').addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const url = this.getAttribute('data-url');
+        const title = this.getAttribute('data-title');
+        
+        // Increment download counter
+        incrementDownload(id);
+        
+        // Handle the download
+        downloadWallpaper(url, title);
+      });
+      
+      // Handle click outside modal
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          hideWallpaperModal();
+        }
+      });
+      
+      // Prevent scrolling on body
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Hide wallpaper modal
+    function hideWallpaperModal() {
+      const modal = document.getElementById('wallpaperModal');
+      if (modal) {
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+        
+        setTimeout(() => {
+          modal.remove();
+          document.body.style.overflow = 'auto';
+        }, 300);
+      }
+    }
+
+    // Toggle theme
+    function applyTheme() {
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        sunIcon.classList.remove('hidden');
+        moonIcon.classList.add('hidden');
+      }
+    }
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      localStorage.setItem('darkMode', isDarkMode);
+      applyTheme();
+    }
+
+    // Initialize app
+    function init() {
+      // Prevent any default form submissions that might reload the page
+      document.addEventListener('submit', function(e) {
+        e.preventDefault();
+      });
+      
+      // Load data from localStorage
+      wallpapersData = loadWallpapersFromStorage();
+      categoriesData = loadCategoriesFromStorage();
+      
+      // Initialize download counts
+      initializeDownloadCounts();
+      
+      // Render UI
+      renderCategories();
+      renderWallpapers();
+      
+      // Apply theme
+      applyTheme();
+      
+      // Event listener for theme toggle
+      themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    // Run the app
+    init();
+  </script>
+</body>
+</html> 

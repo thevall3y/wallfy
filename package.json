@@ -1,0 +1,12 @@
+{
+  "name": "wallify",
+  "version": "1.0.0",
+  "description": "A modern wallpaper gallery app",
+  "scripts": {
+    "start": "serve",
+    "build": "echo 'No build steps required'"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+} 
