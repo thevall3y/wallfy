@@ -400,45 +400,15 @@
       }
     }
 
-    // Download wallpaper function
-    function downloadWallpaper(url, title) {
-      // Create a temporary container to show status
-      const statusContainer = document.createElement('div');
-      statusContainer.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      statusContainer.textContent = 'Opening image in new tab...';
-      document.body.appendChild(statusContainer);
-      
-      // Remove the status after 3 seconds
-      setTimeout(() => {
-        statusContainer.remove();
-      }, 3000);
-      
-      // For Imgur and other sites that prevent direct downloads
-      // Open the image in a new tab where the user can save it
-      window.open(url, '_blank');
-      
-      // Alternative approach - create an invisible link and click it
-      // This works for some URLs but not all
-      try {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
-        link.target = '_blank';
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (error) {
-        console.log('Download fallback used');
-      }
-    }
-
     // Show wallpaper modal
     function showWallpaperModal(wallpaper) {
       // Create modal element
       const modal = document.createElement('div');
       modal.className = 'modal fixed inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm opacity-0';
       modal.setAttribute('id', 'wallpaperModal');
+      
+      // Get download URL (use homescreenUrl if available, or fallback to imageUrl)
+      const downloadUrl = wallpaper.downloadUrl || wallpaper.homescreenUrl || wallpaper.imageUrl;
       
       modal.innerHTML = `
         <div class="bg-white dark:bg-gray-800 rounded-lg max-w-3xl w-full overflow-hidden shadow-xl relative">
@@ -472,11 +442,11 @@
               </div>
               <div class="mt-6">
                 <button 
-                   class="download-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                   class="download-btn w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                    data-id="${wallpaper.id}"
-                   data-url="${wallpaper.imageUrl}"
+                   data-url="${downloadUrl}"
                    data-title="${wallpaper.title}">
-                  Download
+                  Download Wallpaper
                   <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
@@ -581,6 +551,23 @@
 
     // Run the app
     init();
+
+    // Download wallpaper function
+    function downloadWallpaper(url, title) {
+      // Create a temporary container to show status
+      const statusContainer = document.createElement('div');
+      statusContainer.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+      statusContainer.textContent = 'Opening download link...';
+      document.body.appendChild(statusContainer);
+      
+      // Remove the status after 3 seconds
+      setTimeout(() => {
+        statusContainer.remove();
+      }, 3000);
+      
+      // Open the download URL in a new tab
+      window.open(url, '_blank');
+    }
   </script>
   
   <!-- Ad Script -->
