@@ -3,54 +3,248 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wallify - Modern Wallpapers</title>
+    <title>Wallify - Beautiful Wallpapers</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
       body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
+
+      .wallpaper-card {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+      }
+
+      .wallpaper-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .wallpaper-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .wallpaper-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 15px;
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7) 60%, transparent);
+        color: white;
+      }
+
+      .category-btn {
+        transition: all 0.3s ease;
+      }
+
+      .category-btn:hover, .category-btn.active {
+        background-color: #3b82f6;
+        color: white;
+      }
+
+      .theme-toggle {
+        cursor: pointer;
+      }
+
+      /* Dark mode styles */
+      .dark {
+        background-color: #1e293b;
+        color: #f8fafc;
+      }
+
+      .dark .header {
+        background-color: #0f172a;
+        border-bottom: 1px solid #334155;
+      }
+
+      .dark .sidebar {
+        background-color: #1e293b;
+        border-right: 1px solid #334155;
+      }
     </style>
   </head>
-  <body class="bg-gray-100 text-gray-800">
-    <header class="bg-white shadow p-4 mb-4">
-      <h1 class="text-2xl font-bold text-center">Wallify</h1>
+  <body class="bg-gray-100">
+    <!-- Header -->
+    <header class="header bg-white shadow-sm p-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Wallify</h1>
+      <div class="theme-toggle">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
     </header>
 
     <!-- ✅ Ad #1 -->
-    <div class="flex justify-center mb-4">
+    <div class="flex justify-center my-4">
       <div id="container-fbe214b27e67cf7d85c1a5eca833a308"></div>
     </div>
     <script async="async" data-cfasync="false" src="//pl26308968.effectiveratecpm.com/fbe214b27e67cf7d85c1a5eca833a308/invoke.js"></script>
 
-    <main class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-      <!-- Example wallpaper cards -->
-      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-        <img src="https://source.unsplash.com/random/300x500?wallpaper,1" alt="Wallpaper 1" class="w-full h-48 object-cover">
-      </div>
-      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-        <img src="https://source.unsplash.com/random/300x500?wallpaper,2" alt="Wallpaper 2" class="w-full h-48 object-cover">
-      </div>
-      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-        <img src="https://source.unsplash.com/random/300x500?wallpaper,3" alt="Wallpaper 3" class="w-full h-48 object-cover">
-      </div>
-      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-        <img src="https://source.unsplash.com/random/300x500?wallpaper,4" alt="Wallpaper 4" class="w-full h-48 object-cover">
-      </div>
-      <!-- Add more wallpapers here -->
-    </main>
+    <div class="flex flex-col md:flex-row">
+      <!-- Sidebar -->
+      <aside class="sidebar w-full md:w-64 p-4 bg-white shadow-sm">
+        <h2 class="text-lg font-semibold mb-4">Categories</h2>
+        
+        <nav class="space-y-2">
+          <button class="category-btn active w-full text-left px-4 py-2 rounded-lg bg-blue-500 text-white">All</button>
+          <button class="category-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200">Nature</button>
+          <button class="category-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200">Abstract</button>
+          <button class="category-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200">Animals</button>
+          <button class="category-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200">Space</button>
+          <button class="category-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200">Cars</button>
+        </nav>
 
-    <!-- ✅ Ad #2 -->
-    <div class="flex justify-center my-4">
-      <script async="async" data-cfasync="false" src="//pl26308968.effectiveratecpm.com/fbe214b27e67cf7d85c1a5eca833a308/invoke.js"></script>
-      <div id="container-fbe214b27e67cf7d85c1a5eca833a308"></div>
+        <div class="mt-8 p-4 bg-blue-100 rounded-lg">
+          <h3 class="font-medium text-blue-800">Mobile Wallpapers</h3>
+          <p class="text-sm text-blue-600 mt-1">Optimized for smartphone screens with 1080×1920 resolution</p>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Wallpaper 1 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?mountains,lake" alt="Mountain Lake">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Mountain Lake</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Nature</span>
+                <span class="text-sm">128 downloads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallpaper 2 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?forest,path" alt="Forest Path">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Forest Path</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Nature</span>
+                <span class="text-sm">95 downloads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallpaper 3 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?autumn,leaves" alt="Autumn Colors">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Autumn Colors</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Nature</span>
+                <span class="text-sm">152 downloads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallpaper 4 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?tree,roots" alt="Ancient Tree">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Ancient Tree</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Nature</span>
+                <span class="text-sm">114 downloads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ Ad #2 -->
+          <div class="col-span-full my-4">
+            <div class="flex justify-center">
+              <script async="async" data-cfasync="false" src="//pl26308968.effectiveratecpm.com/fbe214b27e67cf7d85c1a5eca833a308/invoke.js"></script>
+              <div id="container-fbe214b27e67cf7d85c1a5eca833a308"></div>
+            </div>
+          </div>
+
+          <!-- Wallpaper 5 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?abstract,colors" alt="Color Splash">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Color Splash</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Abstract</span>
+                <span class="text-sm">87 downloads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallpaper 6 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?gradient" alt="Gradient Flow">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Gradient Flow</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Abstract</span>
+                <span class="text-sm">106 downloads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallpaper 7 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?marble" alt="Marble Texture">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Marble Texture</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Abstract</span>
+                <span class="text-sm">74 downloads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallpaper 8 -->
+          <div class="wallpaper-card rounded-xl overflow-hidden shadow-md">
+            <img src="https://source.unsplash.com/random/800x1200?waves,abstract" alt="Neon Waves">
+            <div class="wallpaper-info">
+              <h3 class="text-lg font-medium">Neon Waves</h3>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-300">Abstract</span>
+                <span class="text-sm">134 downloads</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
     <!-- ✅ Ad #3 (Bottom Script) -->
-    <script type='text/javascript' src='//pl26308988.effectiveratecpm.com/f4/05/3e/f4053e187d23a6baba1b8311ab2965d0.js'></script>
+    <div class="flex justify-center my-4">
+      <script type='text/javascript' src='//pl26308988.effectiveratecpm.com/f4/05/3e/f4053e187d23a6baba1b8311ab2965d0.js'></script>
+    </div>
     
     <!-- ✅ Ad #4 -->
     <div class="flex justify-center my-4">
       <iframe src="https://www.effectiveratecpm.com/hv6bbtzy0y?key=fa305463e639e4b073c9ddcf107b9b12" width="100%" height="90" frameborder="0" scrolling="no"></iframe>
     </div>
+
+    <script>
+      // Theme toggle functionality
+      const themeToggle = document.querySelector('.theme-toggle');
+      const body = document.body;
+      
+      themeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark');
+      });
+
+      // Category filtering (basic functionality)
+      const categoryButtons = document.querySelectorAll('.category-btn');
+      
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Remove active class from all buttons
+          categoryButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
+          
+          // Add active class to clicked button
+          button.classList.add('active', 'bg-blue-500', 'text-white');
+        });
+      });
+    </script>
   </body>
 </html>
