@@ -378,73 +378,130 @@
       }
     }
     
-    // Save wallpapers to localStorage
+    // Save wallpapers to API
     function saveWallpapers() {
-      const wallpapersJson = JSON.stringify(wallpapers);
-      console.log("Saving wallpapers to localStorage:", wallpapers.length);
-      localStorage.setItem('wallpapers', wallpapersJson);
+      console.log("Saving wallpapers to API:", wallpapers.length);
       
-      // Add a timestamp to help with cache busting
-      localStorage.setItem('wallpapers_updated', new Date().getTime());
+      // Show loading notification
+      showNotification('Saving wallpapers to server...', 'blue');
       
-      // Also update download counts
-      const downloadsData = {};
-      wallpapers.forEach(wallpaper => {
-        downloadsData[wallpaper.id] = wallpaper.downloads;
+      // Send data to API
+      fetch('/api/wallpapers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ wallpapers }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log("Wallpapers saved successfully:", data);
+          showNotification('Wallpapers saved to server!', 'green');
+        } else {
+          console.error("Error saving wallpapers:", data.error);
+          showNotification('Error saving wallpapers: ' + data.error, 'red');
+        }
+      })
+      .catch(error => {
+        console.error("Error saving wallpapers:", error);
+        showNotification('Error saving wallpapers. Check console for details.', 'red');
       });
-      localStorage.setItem('wallpaperDownloads', JSON.stringify(downloadsData));
-      
-      // Show a notification that data was saved
-      showNotification('Wallpapers saved to storage! Remember to refresh the main page.', 'green');
     }
 
-    // Show a notification message
-    function showNotification(message, color = 'blue') {
-      const notification = document.createElement('div');
-      notification.className = `fixed bottom-4 right-4 bg-${color}-600 text-white px-4 py-2 rounded-md shadow-lg z-50`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.remove();
-      }, 3000);
-    }
-
-    // Save categories to localStorage
+    // Save categories to API
     function saveCategories() {
       // Make sure we're not saving 'All' in the categories list for admin panel
       // as it's added dynamically in the main site only
       const categoriesToSave = categories.filter(cat => cat !== 'All');
-      localStorage.setItem('categories', JSON.stringify(categoriesToSave));
-    }
-
-    // Load wallpapers from localStorage
-    function loadWallpapers() {
-      const savedWallpapers = localStorage.getItem('wallpapers');
-      if (savedWallpapers) {
-        try {
-          const parsed = JSON.parse(savedWallpapers);
-          if (parsed && Array.isArray(parsed) && parsed.length > 0) {
-            console.log("Loaded wallpapers from localStorage:", parsed.length);
-            wallpapers = parsed;
-          } else {
-            console.log("No valid wallpapers in localStorage, using defaults");
-          }
-        } catch (e) {
-          console.error("Error parsing wallpapers from localStorage:", e);
+      
+      console.log("Saving categories to API:", categoriesToSave.length);
+      
+      // Show loading notification
+      showNotification('Saving categories to server...', 'blue');
+      
+      // Send data to API
+      fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ categories: categoriesToSave }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log("Categories saved successfully:", data);
+          showNotification('Categories saved to server!', 'green');
+        } else {
+          console.error("Error saving categories:", data.error);
+          showNotification('Error saving categories: ' + data.error, 'red');
         }
-      } else {
-        console.log("No wallpapers in localStorage, using defaults");
-      }
-      initializeDownloadCounts();
+      })
+      .catch(error => {
+        console.error("Error saving categories:", error);
+        showNotification('Error saving categories. Check console for details.', 'red');
+      });
     }
 
-    // Load categories from localStorage
+    // Load wallpapers from API
+    function loadWallpapers() {
+      console.log("Loading wallpapers from API");
+      
+      // Show loading notification
+      showNotification('Loading wallpapers from server...', 'blue');
+      
+      // Fetch data from API
+      fetch('/api/wallpapers')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.wallpapers)) {
+            console.log("Loaded wallpapers from API:", data.wallpapers.length);
+            wallpapers = data.wallpapers;
+            showNotification('Wallpapers loaded from server!', 'green');
+          } else {
+            console.log("No valid wallpapers in API, using defaults");
+            showNotification('Using default wallpapers', 'blue');
+          }
+          initializeDownloadCounts();
+          renderWallpapers();
+        })
+        .catch(error => {
+          console.error("Error loading wallpapers from API:", error);
+          showNotification('Error loading wallpapers. Using defaults.', 'red');
+          initializeDownloadCounts();
+          renderWallpapers();
+        });
+    }
+
+    // Load categories from API
     function loadCategories() {
-      const savedCategories = localStorage.getItem('categories');
-      if (savedCategories) {
-        categories = JSON.parse(savedCategories);
-      }
+      console.log("Loading categories from API");
+      
+      // Show loading notification
+      showNotification('Loading categories from server...', 'blue');
+      
+      // Fetch data from API
+      fetch('/api/categories')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.categories)) {
+            console.log("Loaded categories from API:", data.categories.length);
+            categories = data.categories;
+            showNotification('Categories loaded from server!', 'green');
+          } else {
+            console.log("No valid categories in API, using defaults");
+            showNotification('Using default categories', 'blue');
+          }
+          populateCategoryDropdowns();
+          renderCategories();
+        })
+        .catch(error => {
+          console.error("Error loading categories from API:", error);
+          showNotification('Error loading categories. Using defaults.', 'red');
+          populateCategoryDropdowns();
+          renderCategories();
+        });
     }
 
     // Populate category dropdowns
@@ -803,6 +860,18 @@
       imageFileInput.value = '';
       imagePreview.classList.add('hidden');
       previewImage.src = '';
+    }
+
+    // Show a notification message
+    function showNotification(message, color = 'blue') {
+      const notification = document.createElement('div');
+      notification.className = `fixed bottom-4 right-4 bg-${color}-600 text-white px-4 py-2 rounded-md shadow-lg z-50`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
     }
 
     // Initialize app

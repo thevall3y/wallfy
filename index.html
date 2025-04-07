@@ -252,78 +252,88 @@
     let wallpapersData = [];
     let categoriesData = [];
 
-    // Load wallpapers from localStorage
+    // Load wallpapers from API
     function loadWallpapersFromStorage() {
       // Check for fresh data
-      console.log("Checking for wallpapers in localStorage");
+      console.log("Checking for wallpapers in API");
       
-      // Check if localStorage has been updated recently by the admin panel
-      const lastUpdated = localStorage.getItem('wallpapers_updated');
-      if (lastUpdated) {
-        console.log("Last updated timestamp:", new Date(parseInt(lastUpdated)));
-      }
-      
-      const savedWallpapers = localStorage.getItem('wallpapers');
-      if (savedWallpapers) {
-        try {
-          const parsed = JSON.parse(savedWallpapers);
-          if (parsed && Array.isArray(parsed) && parsed.length > 0) {
-            console.log("Loaded wallpapers from localStorage:", parsed.length);
-            
-            // Log details for debugging
-            let downloadUrlCount = 0;
-            parsed.forEach(wallpaper => {
-              // Log each wallpaper to verify downloadUrl is present
-              if (wallpaper.downloadUrl) {
-                downloadUrlCount++;
-                console.log(`Wallpaper ${wallpaper.title} has downloadUrl: ${wallpaper.downloadUrl}`);
-              }
-            });
-            console.log(`Found ${downloadUrlCount} wallpapers with download URLs`);
-            
-            // Ensure backwards compatibility with existing data
-            const processedWallpapers = parsed.map(wallpaper => {
-              // Make sure all wallpapers have required properties
-              if (!wallpaper.homescreenUrl) {
-                wallpaper.homescreenUrl = wallpaper.imageUrl;
-              }
-              return wallpaper;
-            });
-            return processedWallpapers;
-          }
-        } catch (e) {
-          console.error("Error parsing wallpapers from localStorage:", e);
-        }
-      }
-      // If no wallpapers in localStorage or empty array, use defaults
-      console.log("Using default wallpapers");
-      localStorage.setItem('wallpapers', JSON.stringify(defaultWallpapers));
-      return defaultWallpapers;
+      // Return a promise that resolves with the wallpapers data
+      return new Promise((resolve) => {
+        // Fetch data from API
+        fetch('/api/wallpapers')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && Array.isArray(data.wallpapers) && data.wallpapers.length > 0) {
+              console.log("Loaded wallpapers from API:", data.wallpapers.length);
+              
+              // Log details for debugging
+              let downloadUrlCount = 0;
+              data.wallpapers.forEach(wallpaper => {
+                // Log each wallpaper to verify downloadUrl is present
+                if (wallpaper.downloadUrl) {
+                  downloadUrlCount++;
+                  console.log(`Wallpaper ${wallpaper.title} has downloadUrl: ${wallpaper.downloadUrl}`);
+                }
+              });
+              console.log(`Found ${downloadUrlCount} wallpapers with download URLs`);
+              
+              // Ensure backwards compatibility with existing data
+              const processedWallpapers = data.wallpapers.map(wallpaper => {
+                // Make sure all wallpapers have required properties
+                if (!wallpaper.homescreenUrl) {
+                  wallpaper.homescreenUrl = wallpaper.imageUrl;
+                }
+                return wallpaper;
+              });
+              resolve(processedWallpapers);
+            } else {
+              console.log("No valid wallpapers in API, using defaults");
+              resolve(defaultWallpapers);
+            }
+          })
+          .catch(error => {
+            console.error("Error loading wallpapers from API:", error);
+            console.log("Using default wallpapers due to error");
+            resolve(defaultWallpapers);
+          });
+      });
     }
 
-    // Load categories from localStorage
+    // Load categories from API
     function loadCategoriesFromStorage() {
-      const savedCategories = localStorage.getItem('categories');
-      if (savedCategories) {
-        // Make sure 'All' is the first category
-        let storedCategories = JSON.parse(savedCategories);
-        if (storedCategories && storedCategories.length > 0) {
-          if (!storedCategories.includes('All')) {
-            storedCategories = ['All', ...storedCategories];
-          } else {
-            // Move 'All' to the front if it exists but isn't first
-            const allIndex = storedCategories.indexOf('All');
-            if (allIndex > 0) {
-              storedCategories.splice(allIndex, 1);
-              storedCategories.unshift('All');
+      // Return a promise that resolves with the categories data
+      return new Promise((resolve) => {
+        // Fetch data from API
+        fetch('/api/categories')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+              console.log("Loaded categories from API:", data.categories.length);
+              
+              // Make sure 'All' is the first category
+              let storedCategories = data.categories;
+              if (!storedCategories.includes('All')) {
+                storedCategories = ['All', ...storedCategories];
+              } else {
+                // Move 'All' to the front if it exists but isn't first
+                const allIndex = storedCategories.indexOf('All');
+                if (allIndex > 0) {
+                  storedCategories.splice(allIndex, 1);
+                  storedCategories.unshift('All');
+                }
+              }
+              resolve(storedCategories);
+            } else {
+              console.log("No valid categories in API, using defaults");
+              resolve(defaultCategories);
             }
-          }
-          return storedCategories;
-        }
-      }
-      // If no categories in localStorage or empty array, use defaults
-      localStorage.setItem('categories', JSON.stringify(defaultCategories.filter(c => c !== 'All')));
-      return defaultCategories;
+          })
+          .catch(error => {
+            console.error("Error loading categories from API:", error);
+            console.log("Using default categories due to error");
+            resolve(defaultCategories);
+          });
+      });
     }
 
     // Initialize download counts from localStorage
@@ -565,8 +575,8 @@
     }
 
     // Initialize app
-    function init() {
-      // Load data from localStorage
+    async function init() {
+      // Load data from API
       console.log("Initializing app");
       
       // DEBUG: Add a console helper function to check wallpapers
@@ -578,31 +588,41 @@
       
       // Add refresh button functionality
       const refreshBtn = document.getElementById('refreshBtn');
-      refreshBtn.addEventListener('click', function() {
-        console.log("Refreshing data from localStorage");
+      refreshBtn.addEventListener('click', async function() {
+        console.log("Refreshing data from API");
         // Clear any in-memory cache
         wallpapersData = [];
         categoriesData = [];
         
-        // Force reload from localStorage
-        wallpapersData = loadWallpapersFromStorage();
-        categoriesData = loadCategoriesFromStorage();
+        // Show loading notification
+        const loadingNotification = document.createElement('div');
+        loadingNotification.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+        loadingNotification.textContent = 'Refreshing data from server...';
+        document.body.appendChild(loadingNotification);
         
-        // Re-initialize download counts
-        initializeDownloadCounts();
-        
-        // Re-render UI
-        renderCategories();
-        renderWallpapers();
-        
-        // Show a notification
-        const notification = document.createElement('div');
-        notification.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-        notification.textContent = 'Data refreshed from storage!';
-        document.body.appendChild(notification);
+        try {
+          // Force reload from API
+          wallpapersData = await loadWallpapersFromStorage();
+          categoriesData = await loadCategoriesFromStorage();
+          
+          // Re-initialize download counts
+          initializeDownloadCounts();
+          
+          // Re-render UI
+          renderCategories();
+          renderWallpapers();
+          
+          // Show success notification
+          loadingNotification.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+          loadingNotification.textContent = 'Data refreshed from server!';
+        } catch (error) {
+          console.error("Error refreshing data:", error);
+          loadingNotification.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+          loadingNotification.textContent = 'Error refreshing data. Check console for details.';
+        }
         
         setTimeout(() => {
-          notification.remove();
+          loadingNotification.remove();
         }, 3000);
       });
       
@@ -611,28 +631,35 @@
         e.preventDefault();
       });
       
-      // Load data from localStorage - force a fresh load
-      if (localStorage.getItem('wallpapers')) {
-        console.log("Found wallpapers in localStorage");
-      } else {
-        console.log("No wallpapers found in localStorage");
+      try {
+        // Load data from API
+        wallpapersData = await loadWallpapersFromStorage();
+        categoriesData = await loadCategoriesFromStorage();
+        
+        // Initialize download counts
+        initializeDownloadCounts();
+        
+        // Render UI
+        renderCategories();
+        renderWallpapers();
+        
+        // Apply theme
+        applyTheme();
+        
+        // Event listener for theme toggle
+        themeToggle.addEventListener('click', toggleTheme);
+      } catch (error) {
+        console.error("Error initializing app:", error);
+        // Show error notification
+        const errorNotification = document.createElement('div');
+        errorNotification.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+        errorNotification.textContent = 'Error loading data. Check console for details.';
+        document.body.appendChild(errorNotification);
+        
+        setTimeout(() => {
+          errorNotification.remove();
+        }, 5000);
       }
-      
-      wallpapersData = loadWallpapersFromStorage();
-      categoriesData = loadCategoriesFromStorage();
-      
-      // Initialize download counts
-      initializeDownloadCounts();
-      
-      // Render UI
-      renderCategories();
-      renderWallpapers();
-      
-      // Apply theme
-      applyTheme();
-      
-      // Event listener for theme toggle
-      themeToggle.addEventListener('click', toggleTheme);
     }
 
     // Run the app
@@ -651,8 +678,20 @@
         statusContainer.remove();
       }, 3000);
       
-      // Open the download URL in a new tab
-      window.open(url, '_blank');
+      // Check if the URL is a Google Drive link
+      if (url.includes('drive.google.com')) {
+        // For Google Drive links, open in a new tab
+        window.open(url, '_blank');
+      } else {
+        // For direct image URLs, create a download link
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     }
   </script>
   

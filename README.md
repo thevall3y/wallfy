@@ -1,70 +1,74 @@
-# Wallify - Modern Wallpaper Web App
+# Wallify - Modern Wallpaper App
 
-A modern responsive wallpaper web app built with React, Next.js, and Tailwind CSS.
+A modern, responsive wallpaper application built with HTML, CSS, and JavaScript.
 
 ## Features
 
-- Grid layout displaying wallpaper images in a clean, aesthetic way
-- Category filters (Nature, Abstract, Animals, Space)
-- Dark/light mode toggle
-- Hover effects on wallpapers (zoom in and overlay)
-- Modal for fullscreen preview when a wallpaper is clicked
+- Browse wallpapers by category
+- Download wallpapers directly to your device
+- Dark mode support
 - Responsive design for all devices
+- Admin panel for managing wallpapers and categories
+
+## Deployment to Vercel
+
+This project is configured for easy deployment to Vercel. Follow these steps to deploy:
+
+1. **Install Vercel CLI** (if you haven't already):
+   ```
+   npm install -g vercel
+   ```
+
+2. **Login to Vercel**:
+   ```
+   vercel login
+   ```
+
+3. **Deploy the project**:
+   ```
+   vercel
+   ```
+
+4. **For production deployment**:
+   ```
+   vercel --prod
+   ```
+
+## API Endpoints
+
+The application uses the following API endpoints:
+
+- `/api/wallpapers` - GET and POST endpoints for managing wallpapers
+- `/api/categories` - GET and POST endpoints for managing categories
+
+## Local Development
+
+To run the project locally:
+
+1. Clone the repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Start the development server:
+   ```
+   npm run dev
+   ```
 
 ## Project Structure
 
-```
-wallfy/
-├── src/
-│   ├── app/
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── CategorySidebar.tsx
-│   │   ├── Header.tsx
-│   │   ├── ThemeProvider.tsx
-│   │   ├── ThemeToggle.tsx
-│   │   ├── WallpaperCard.tsx
-│   │   ├── WallpaperGrid.tsx
-│   │   └── WallpaperModal.tsx
-│   ├── data/
-│   │   └── wallpapers.ts
-│   └── lib/
-├── package.json
-├── tailwind.config.js
-├── tsconfig.json
-└── README.md
-```
-
-## Setup and Installation
-
-1. Install [Node.js](https://nodejs.org/)
-2. Clone the repository
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Future Enhancements
-
-- Connect to an API or CMS for dynamic wallpaper content
-- Add search functionality
-- Implement user accounts for favorites/collections
-- Add download functionality for wallpapers
-- Implement pagination or infinite scroll for large wallpaper collections
+- `index.html` - Main application
+- `admin.html` - Admin panel for managing wallpapers and categories
+- `api/` - API endpoints for the application
+- `assets/` - Static assets like images and icons
 
 ## Technologies Used
 
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn/ui components
-- Lucide React icons
-- next-themes 
+- HTML5
+- CSS3 (with Tailwind CSS)
+- JavaScript (ES6+)
+- Vercel for deployment and API hosting
+
+## License
+
+MIT 
