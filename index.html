@@ -44,10 +44,15 @@
       <div class="flex items-center gap-2">
         <h1 class="text-2xl font-bold tracking-tight">Wallify</h1>
       </div>
-      <button id="themeToggle" class="p-2 rounded-md hover:bg-gray-100" aria-label="Toggle theme">
-        <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-        <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="refreshBtn" class="p-2 rounded-md hover:bg-gray-100 text-blue-600" aria-label="Refresh data">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+        </button>
+        <button id="themeToggle" class="p-2 rounded-md hover:bg-gray-100" aria-label="Toggle theme">
+          <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -252,18 +257,29 @@
       // Check for fresh data
       console.log("Checking for wallpapers in localStorage");
       
+      // Check if localStorage has been updated recently by the admin panel
+      const lastUpdated = localStorage.getItem('wallpapers_updated');
+      if (lastUpdated) {
+        console.log("Last updated timestamp:", new Date(parseInt(lastUpdated)));
+      }
+      
       const savedWallpapers = localStorage.getItem('wallpapers');
       if (savedWallpapers) {
         try {
           const parsed = JSON.parse(savedWallpapers);
           if (parsed && Array.isArray(parsed) && parsed.length > 0) {
             console.log("Loaded wallpapers from localStorage:", parsed.length);
+            
+            // Log details for debugging
+            let downloadUrlCount = 0;
             parsed.forEach(wallpaper => {
               // Log each wallpaper to verify downloadUrl is present
               if (wallpaper.downloadUrl) {
+                downloadUrlCount++;
                 console.log(`Wallpaper ${wallpaper.title} has downloadUrl: ${wallpaper.downloadUrl}`);
               }
             });
+            console.log(`Found ${downloadUrlCount} wallpapers with download URLs`);
             
             // Ensure backwards compatibility with existing data
             const processedWallpapers = parsed.map(wallpaper => {
@@ -552,6 +568,43 @@
     function init() {
       // Load data from localStorage
       console.log("Initializing app");
+      
+      // DEBUG: Add a console helper function to check wallpapers
+      console.log("DEBUG: Type 'showWallpapers()' in console to see wallpapers data");
+      window.showWallpapers = function() {
+        console.log("Current wallpapers:", wallpapersData);
+        return wallpapersData;
+      };
+      
+      // Add refresh button functionality
+      const refreshBtn = document.getElementById('refreshBtn');
+      refreshBtn.addEventListener('click', function() {
+        console.log("Refreshing data from localStorage");
+        // Clear any in-memory cache
+        wallpapersData = [];
+        categoriesData = [];
+        
+        // Force reload from localStorage
+        wallpapersData = loadWallpapersFromStorage();
+        categoriesData = loadCategoriesFromStorage();
+        
+        // Re-initialize download counts
+        initializeDownloadCounts();
+        
+        // Re-render UI
+        renderCategories();
+        renderWallpapers();
+        
+        // Show a notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+        notification.textContent = 'Data refreshed from storage!';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      });
       
       // Prevent any default form submissions that might reload the page
       document.addEventListener('submit', function(e) {
