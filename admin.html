@@ -205,17 +205,35 @@
     </div>
 
     <!-- Settings Section (Hidden by default) -->
-    <div id="settingsSection" class="hidden">
-      <h2 class="text-xl font-bold mb-6">Settings</h2>
-      <div class="bg-white shadow-md rounded-lg p-6">
-        <h3 class="text-lg font-medium mb-4">Debug Options</h3>
-        <div class="space-y-4">
-          <div>
-            <p class="text-sm text-gray-600 mb-2">If the changes in admin panel are not appearing in the main site, try clearing the storage cache:</p>
-            <button id="clearStorageBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-              Clear Storage Cache
-            </button>
-          </div>
+    <div id="settingsSection" class="max-w-5xl mx-auto hidden">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+        <h2 class="text-xl font-bold mb-4">Settings</h2>
+        
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2">Theme Settings</h3>
+          <button id="themeToggleSetting" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Toggle Dark/Light Mode
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2">Cache Management</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            If changes in the admin panel aren't appearing on the main site, try clearing the storage cache.
+          </p>
+          <button id="clearStorageBtn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+            Clear Storage Cache
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2">Advanced Cache Clearing</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            Use this option to clear all browser caches, including application cache. This may help resolve interface differences between browsers.
+          </p>
+          <button id="clearAllCachesBtn" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
+            Clear All Browser Caches
+          </button>
         </div>
       </div>
     </div>
@@ -378,29 +396,24 @@
       }
     }
     
-    // Save wallpapers to API
+    // Function to get the base API URL that works in both local development and production
+    function getApiBaseUrl() {
+      // Check if we're running on local development (localhost:3000)
+      if (window.location.hostname === 'localhost') {
+        return 'http://localhost:3000';
+      }
+      // On Vercel or production, use relative URLs
+      return '';
+    }
+    
     function saveWallpapers() {
       console.log("Saving wallpapers:", wallpapers.length);
       
-      // Save to localStorage first as a backup
-      const wallpapersJson = JSON.stringify(wallpapers);
-      localStorage.setItem('wallpapers', wallpapersJson);
+      // Show a notification about saving
+      showNotification('Saving wallpapers...', 'blue');
       
-      // Add a timestamp to help with cache busting
-      localStorage.setItem('wallpapers_updated', new Date().getTime());
-      
-      // Also update download counts
-      const downloadsData = {};
-      wallpapers.forEach(wallpaper => {
-        downloadsData[wallpaper.id] = wallpaper.downloads;
-      });
-      localStorage.setItem('wallpaperDownloads', JSON.stringify(downloadsData));
-      
-      // Show success notification
-      showNotification('Wallpapers saved successfully!', 'green');
-      
-      // Try to save to API if available
-      fetch('/api/wallpapers', {
+      // Try to save to API first
+      fetch(`${getApiBaseUrl()}/api/wallpapers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -410,29 +423,66 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log("Also saved to API:", data);
+          console.log("Saved to API:", data);
+          showNotification('Wallpapers saved to server successfully!', 'green');
+          
+          // Also save to localStorage as a backup
+          const wallpapersJson = JSON.stringify(wallpapers);
+          localStorage.setItem('wallpapers', wallpapersJson);
+          
+          // Add a timestamp to help with cache busting
+          localStorage.setItem('wallpapers_updated', new Date().getTime());
+          
+          // Also update download counts
+          const downloadsData = {};
+          wallpapers.forEach(wallpaper => {
+            downloadsData[wallpaper.id] = wallpaper.downloads;
+          });
+          localStorage.setItem('wallpaperDownloads', JSON.stringify(downloadsData));
+        } else {
+          console.error("API save failed:", data.error);
+          showNotification('Error saving to server, falling back to localStorage', 'red');
+          
+          // Fall back to localStorage
+          const wallpapersJson = JSON.stringify(wallpapers);
+          localStorage.setItem('wallpapers', wallpapersJson);
+          localStorage.setItem('wallpapers_updated', new Date().getTime());
+          
+          const downloadsData = {};
+          wallpapers.forEach(wallpaper => {
+            downloadsData[wallpaper.id] = wallpaper.downloads;
+          });
+          localStorage.setItem('wallpaperDownloads', JSON.stringify(downloadsData));
         }
       })
       .catch(error => {
-        console.log("Could not save to API (this is normal if running locally):", error);
+        console.log("Could not save to API, using localStorage instead:", error);
+        showNotification('Could not connect to server, saving locally only', 'yellow');
+        
+        // Fall back to localStorage
+        const wallpapersJson = JSON.stringify(wallpapers);
+        localStorage.setItem('wallpapers', wallpapersJson);
+        localStorage.setItem('wallpapers_updated', new Date().getTime());
+        
+        const downloadsData = {};
+        wallpapers.forEach(wallpaper => {
+          downloadsData[wallpaper.id] = wallpaper.downloads;
+        });
+        localStorage.setItem('wallpaperDownloads', JSON.stringify(downloadsData));
       });
     }
 
-    // Save categories to API
     function saveCategories() {
       // Make sure we're not saving 'All' in the categories list
       const categoriesToSave = categories.filter(cat => cat !== 'All');
       
       console.log("Saving categories:", categoriesToSave.length);
       
-      // Save to localStorage first as a backup
-      localStorage.setItem('categories', JSON.stringify(categoriesToSave));
+      // Show a notification about saving
+      showNotification('Saving categories...', 'blue');
       
-      // Show success notification
-      showNotification('Categories saved successfully!', 'green');
-      
-      // Try to save to API if available
-      fetch('/api/categories', {
+      // Try to save to API first
+      fetch(`${getApiBaseUrl()}/api/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -442,11 +492,25 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log("Also saved to API:", data);
+          console.log("Saved to API:", data);
+          showNotification('Categories saved to server successfully!', 'green');
+          
+          // Also save to localStorage as a backup
+          localStorage.setItem('categories', JSON.stringify(categoriesToSave));
+        } else {
+          console.error("API save failed:", data.error);
+          showNotification('Error saving to server, falling back to localStorage', 'red');
+          
+          // Fall back to localStorage
+          localStorage.setItem('categories', JSON.stringify(categoriesToSave));
         }
       })
       .catch(error => {
-        console.log("Could not save to API (this is normal if running locally):", error);
+        console.log("Could not save to API, using localStorage instead:", error);
+        showNotification('Could not connect to server, saving locally only', 'yellow');
+        
+        // Fall back to localStorage
+        localStorage.setItem('categories', JSON.stringify(categoriesToSave));
       });
     }
 
@@ -454,40 +518,77 @@
     function loadWallpapers() {
       console.log("Loading wallpapers");
       
-      // Try localStorage first
-      const savedWallpapers = localStorage.getItem('wallpapers');
-      if (savedWallpapers) {
-        try {
-          wallpapers = JSON.parse(savedWallpapers);
-          console.log("Loaded wallpapers from localStorage:", wallpapers.length);
-          showNotification('Wallpapers loaded from storage', 'green');
-          initializeDownloadCounts();
-          renderWallpapers();
-          return;
-        } catch (error) {
-          console.error("Error parsing wallpapers from localStorage:", error);
-        }
-      }
+      // Show a loading notification
+      showNotification('Loading wallpapers...', 'blue');
       
-      // If localStorage failed or is empty, try API
-      fetch('/api/wallpapers')
+      // Try API first
+      fetch(`${getApiBaseUrl()}/api/wallpapers`)
         .then(response => response.json())
         .then(data => {
-          if (data.success && Array.isArray(data.wallpapers)) {
+          if (data.success && Array.isArray(data.wallpapers) && data.wallpapers.length > 0) {
             wallpapers = data.wallpapers;
+            console.log("Loaded wallpapers from API:", wallpapers.length);
             showNotification('Wallpapers loaded from server', 'green');
+            
+            // Also update localStorage for backup
+            localStorage.setItem('wallpapers', JSON.stringify(wallpapers));
+            localStorage.setItem('wallpapers_updated', new Date().getTime());
+            
+            // Also load download counts
+            initializeDownloadCounts();
+            renderWallpapers();
           } else {
-            console.log("Using default wallpapers");
-            showNotification('Using default wallpapers', 'blue');
+            console.log("No valid wallpapers in API response, checking localStorage");
+            
+            // Try localStorage as fallback
+            const savedWallpapers = localStorage.getItem('wallpapers');
+            if (savedWallpapers) {
+              try {
+                wallpapers = JSON.parse(savedWallpapers);
+                console.log("Loaded wallpapers from localStorage:", wallpapers.length);
+                showNotification('Wallpapers loaded from storage', 'yellow');
+                initializeDownloadCounts();
+                renderWallpapers();
+              } catch (error) {
+                console.error("Error parsing wallpapers from localStorage:", error);
+                console.log("Using default wallpapers");
+                initializeDownloadCounts();
+                renderWallpapers();
+                showNotification('Using default wallpapers', 'blue');
+              }
+            } else {
+              console.log("No wallpapers in localStorage, using defaults");
+              initializeDownloadCounts();
+              renderWallpapers();
+              showNotification('Using default wallpapers', 'blue');
+            }
           }
-          initializeDownloadCounts();
-          renderWallpapers();
         })
         .catch(error => {
-          console.log("Could not load from API, using defaults:", error);
-          showNotification('Using default wallpapers', 'blue');
-          initializeDownloadCounts();
-          renderWallpapers();
+          console.log("Could not load from API, checking localStorage:", error);
+          
+          // Try localStorage as fallback
+          const savedWallpapers = localStorage.getItem('wallpapers');
+          if (savedWallpapers) {
+            try {
+              wallpapers = JSON.parse(savedWallpapers);
+              console.log("Loaded wallpapers from localStorage:", wallpapers.length);
+              showNotification('Wallpapers loaded from storage', 'yellow');
+              initializeDownloadCounts();
+              renderWallpapers();
+            } catch (error) {
+              console.error("Error parsing wallpapers from localStorage:", error);
+              console.log("Using default wallpapers");
+              initializeDownloadCounts();
+              renderWallpapers();
+              showNotification('Using default wallpapers', 'blue');
+            }
+          } else {
+            console.log("No wallpapers in localStorage, using defaults");
+            initializeDownloadCounts();
+            renderWallpapers();
+            showNotification('Using default wallpapers', 'blue');
+          }
         });
     }
 
@@ -495,40 +596,75 @@
     function loadCategories() {
       console.log("Loading categories");
       
-      // Try localStorage first
-      const savedCategories = localStorage.getItem('categories');
-      if (savedCategories) {
-        try {
-          categories = JSON.parse(savedCategories);
-          console.log("Loaded categories from localStorage:", categories.length);
-          showNotification('Categories loaded from storage', 'green');
-          populateCategoryDropdowns();
-          renderCategories();
-          return;
-        } catch (error) {
-          console.error("Error parsing categories from localStorage:", error);
-        }
-      }
+      // Show a loading notification
+      showNotification('Loading categories...', 'blue');
       
-      // If localStorage failed or is empty, try API
-      fetch('/api/categories')
+      // Try API first
+      fetch(`${getApiBaseUrl()}/api/categories`)
         .then(response => response.json())
         .then(data => {
-          if (data.success && Array.isArray(data.categories)) {
+          if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
             categories = data.categories;
+            console.log("Loaded categories from API:", categories.length);
             showNotification('Categories loaded from server', 'green');
+            
+            // Also update localStorage for backup
+            localStorage.setItem('categories', JSON.stringify(categories));
+            
+            populateCategoryDropdowns();
+            renderCategories();
           } else {
-            console.log("Using default categories");
-            showNotification('Using default categories', 'blue');
+            console.log("No valid categories in API response, checking localStorage");
+            
+            // Try localStorage as fallback
+            const savedCategories = localStorage.getItem('categories');
+            if (savedCategories) {
+              try {
+                categories = JSON.parse(savedCategories);
+                console.log("Loaded categories from localStorage:", categories.length);
+                showNotification('Categories loaded from storage', 'yellow');
+                populateCategoryDropdowns();
+                renderCategories();
+              } catch (error) {
+                console.error("Error parsing categories from localStorage:", error);
+                console.log("Using default categories");
+                populateCategoryDropdowns();
+                renderCategories();
+                showNotification('Using default categories', 'blue');
+              }
+            } else {
+              console.log("No categories in localStorage, using defaults");
+              populateCategoryDropdowns();
+              renderCategories();
+              showNotification('Using default categories', 'blue');
+            }
           }
-          populateCategoryDropdowns();
-          renderCategories();
         })
         .catch(error => {
-          console.log("Could not load from API, using defaults:", error);
-          showNotification('Using default categories', 'blue');
-          populateCategoryDropdowns();
-          renderCategories();
+          console.log("Could not load from API, checking localStorage:", error);
+          
+          // Try localStorage as fallback
+          const savedCategories = localStorage.getItem('categories');
+          if (savedCategories) {
+            try {
+              categories = JSON.parse(savedCategories);
+              console.log("Loaded categories from localStorage:", categories.length);
+              showNotification('Categories loaded from storage', 'yellow');
+              populateCategoryDropdowns();
+              renderCategories();
+            } catch (error) {
+              console.error("Error parsing categories from localStorage:", error);
+              console.log("Using default categories");
+              populateCategoryDropdowns();
+              renderCategories();
+              showNotification('Using default categories', 'blue');
+            }
+          } else {
+            console.log("No categories in localStorage, using defaults");
+            populateCategoryDropdowns();
+            renderCategories();
+            showNotification('Using default categories', 'blue');
+          }
         });
     }
 
@@ -934,6 +1070,44 @@
         });
       }
       
+      // Clear all caches button
+      const clearAllCachesBtn = document.getElementById('clearAllCachesBtn');
+      if (clearAllCachesBtn) {
+        clearAllCachesBtn.addEventListener('click', async function() {
+          if (confirm('Are you sure you want to clear ALL browser caches? This will reset the application to default state across all browsers.')) {
+            try {
+              // Clear localStorage
+              localStorage.clear();
+              console.log("Cleared localStorage");
+              
+              // Clear sessionStorage
+              sessionStorage.clear();
+              console.log("Cleared sessionStorage");
+              
+              // Clear application cache if supported
+              if ('caches' in window) {
+                const cacheKeys = await caches.keys();
+                await Promise.all(
+                  cacheKeys.map(key => caches.delete(key))
+                );
+                console.log("Cleared application cache");
+              }
+              
+              // Show success message
+              showNotification('All caches cleared successfully! Reloading...', 'green');
+              
+              // Reload the page after a short delay to allow notification to be seen
+              setTimeout(() => {
+                window.location.reload(true); // Force reload from server
+              }, 1500);
+            } catch (error) {
+              console.error("Error clearing caches:", error);
+              showNotification('Error clearing caches: ' + error.message, 'red');
+            }
+          }
+        });
+      }
+      
       // Tab navigation
       wallpapersTab.addEventListener('click', function(e) {
         e.preventDefault();
@@ -1106,6 +1280,12 @@
       
       // Event listener for theme toggle
       themeToggle.addEventListener('click', toggleTheme);
+      
+      // Theme toggle in settings section
+      const themeToggleSetting = document.getElementById('themeToggleSetting');
+      if (themeToggleSetting) {
+        themeToggleSetting.addEventListener('click', toggleTheme);
+      }
     }
 
     // Run the app
