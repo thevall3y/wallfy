@@ -1,10 +1,14 @@
 // api/categories.js
 
-// In-memory storage (will be reset when serverless function restarts)
-// Note: For a production app, you'd use a database
-let categoriesData = ["Nature", "Abstract", "Animals", "Space"];
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
-export default function handler(req, res) {
+// MongoDB connection string from environment variable
+const uri = process.env.MONGODB_URI;
+
+// Default categories to initialize the database if empty
+const defaultCategories = ["Nature", "Abstract", "Animals", "Space"];
+
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,25 +24,68 @@ export default function handler(req, res) {
     return;
   }
 
-  // GET request - return all categories
-  if (req.method === 'GET') {
-    return res.status(200).json({ 
-      success: true, 
-      categories: categoriesData,
-      timestamp: new Date().toISOString()
+  // Check if MongoDB URI is available
+  if (!uri) {
+    console.error("MongoDB URI is not defined!");
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Database configuration error',
+      message: 'MongoDB connection string is not defined' 
     });
-  } 
-  // POST request - update categories
-  else if (req.method === 'POST') {
-    try {
+  }
+
+  // Create a MongoDB client
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+
+  try {
+    // Connect to the MongoDB client
+    await client.connect();
+    console.log("Connected to MongoDB");
+    
+    const database = client.db("wallify");
+    const collection = database.collection("categories");
+
+    // GET request - return all categories
+    if (req.method === 'GET') {
+      // Check if the collection is empty, if so initialize with defaults
+      const count = await collection.countDocuments();
+      if (count === 0) {
+        console.log("Initializing categories collection with defaults");
+        await collection.insertOne({ 
+          id: 'default',
+          categories: defaultCategories
+        });
+      }
+      
+      // Retrieve categories
+      const categoriesDoc = await collection.findOne({ id: 'default' }) || { categories: defaultCategories };
+      
+      return res.status(200).json({ 
+        success: true, 
+        categories: categoriesDoc.categories,
+        timestamp: new Date().toISOString()
+      });
+    } 
+    // POST request - update categories
+    else if (req.method === 'POST') {
       const { categories } = req.body;
       
       if (!Array.isArray(categories)) {
         return res.status(400).json({ success: false, error: 'Categories must be an array' });
       }
-      
-      // Update the categories data
-      categoriesData = categories;
+
+      // Update or insert categories
+      await collection.updateOne(
+        { id: 'default' },
+        { $set: { categories, updatedAt: new Date() } },
+        { upsert: true }
+      );
       
       return res.status(200).json({ 
         success: true, 
@@ -46,13 +93,21 @@ export default function handler(req, res) {
         count: categories.length,
         timestamp: new Date().toISOString()
       });
-    } catch (error) {
-      console.error('Error updating categories:', error);
-      return res.status(500).json({ success: false, error: 'Failed to update categories' });
+    } 
+    // Unsupported method
+    else {
+      return res.status(405).json({ success: false, error: 'Method not allowed' });
     }
-  } 
-  // Unsupported method
-  else {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
+  } catch (error) {
+    console.error("MongoDB operation error:", error);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Database operation failed',
+      message: error.message 
+    });
+  } finally {
+    // Close the connection when done
+    await client.close();
+    console.log("MongoDB connection closed");
   }
 } 
