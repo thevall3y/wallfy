@@ -372,7 +372,9 @@
     
     // Save wallpapers to localStorage
     function saveWallpapers() {
-      localStorage.setItem('wallpapers', JSON.stringify(wallpapers));
+      const wallpapersJson = JSON.stringify(wallpapers);
+      console.log("Saving wallpapers to localStorage:", wallpapers.length);
+      localStorage.setItem('wallpapers', wallpapersJson);
       
       // Also update download counts
       const downloadsData = {};
@@ -394,7 +396,19 @@
     function loadWallpapers() {
       const savedWallpapers = localStorage.getItem('wallpapers');
       if (savedWallpapers) {
-        wallpapers = JSON.parse(savedWallpapers);
+        try {
+          const parsed = JSON.parse(savedWallpapers);
+          if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+            console.log("Loaded wallpapers from localStorage:", parsed.length);
+            wallpapers = parsed;
+          } else {
+            console.log("No valid wallpapers in localStorage, using defaults");
+          }
+        } catch (e) {
+          console.error("Error parsing wallpapers from localStorage:", e);
+        }
+      } else {
+        console.log("No wallpapers in localStorage, using defaults");
       }
       initializeDownloadCounts();
     }

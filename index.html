@@ -251,12 +251,26 @@
     function loadWallpapersFromStorage() {
       const savedWallpapers = localStorage.getItem('wallpapers');
       if (savedWallpapers) {
-        const parsed = JSON.parse(savedWallpapers);
-        if (parsed && parsed.length > 0) {
-          return parsed;
+        try {
+          const parsed = JSON.parse(savedWallpapers);
+          if (parsed && parsed.length > 0) {
+            console.log("Loaded wallpapers from localStorage:", parsed.length);
+            // Ensure backwards compatibility with existing data
+            const processedWallpapers = parsed.map(wallpaper => {
+              // Make sure all wallpapers have required properties
+              if (!wallpaper.homescreenUrl) {
+                wallpaper.homescreenUrl = wallpaper.imageUrl;
+              }
+              return wallpaper;
+            });
+            return processedWallpapers;
+          }
+        } catch (e) {
+          console.error("Error parsing wallpapers from localStorage:", e);
         }
       }
       // If no wallpapers in localStorage or empty array, use defaults
+      console.log("Using default wallpapers");
       localStorage.setItem('wallpapers', JSON.stringify(defaultWallpapers));
       return defaultWallpapers;
     }
@@ -526,12 +540,21 @@
 
     // Initialize app
     function init() {
+      // Load data from localStorage
+      console.log("Initializing app");
+      
       // Prevent any default form submissions that might reload the page
       document.addEventListener('submit', function(e) {
         e.preventDefault();
       });
       
-      // Load data from localStorage
+      // Load data from localStorage - force a fresh load
+      if (localStorage.getItem('wallpapers')) {
+        console.log("Found wallpapers in localStorage");
+      } else {
+        console.log("No wallpapers found in localStorage");
+      }
+      
       wallpapersData = loadWallpapersFromStorage();
       categoriesData = loadCategoriesFromStorage();
       
