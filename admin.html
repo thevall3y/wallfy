@@ -208,7 +208,15 @@
     <div id="settingsSection" class="hidden">
       <h2 class="text-xl font-bold mb-6">Settings</h2>
       <div class="bg-white shadow-md rounded-lg p-6">
-        <p class="text-gray-500">Settings panel coming soon...</p>
+        <h3 class="text-lg font-medium mb-4">Debug Options</h3>
+        <div class="space-y-4">
+          <div>
+            <p class="text-sm text-gray-600 mb-2">If the changes in admin panel are not appearing in the main site, try clearing the storage cache:</p>
+            <button id="clearStorageBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+              Clear Storage Cache
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -375,6 +383,9 @@
       const wallpapersJson = JSON.stringify(wallpapers);
       console.log("Saving wallpapers to localStorage:", wallpapers.length);
       localStorage.setItem('wallpapers', wallpapersJson);
+      
+      // Add a timestamp to help with cache busting
+      localStorage.setItem('wallpapers_updated', new Date().getTime());
       
       // Also update download counts
       const downloadsData = {};
@@ -798,6 +809,18 @@
         currentCategory = this.value;
         renderWallpapers();
       });
+      
+      // Clear storage button
+      const clearStorageBtn = document.getElementById('clearStorageBtn');
+      if (clearStorageBtn) {
+        clearStorageBtn.addEventListener('click', function() {
+          if (confirm('Are you sure you want to clear the storage cache? This will reset any unsaved changes.')) {
+            localStorage.clear();
+            alert('Storage cache cleared. The page will now reload.');
+            location.reload();
+          }
+        });
+      }
       
       // Tab navigation
       wallpapersTab.addEventListener('click', function(e) {

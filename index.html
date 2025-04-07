@@ -249,12 +249,22 @@
 
     // Load wallpapers from localStorage
     function loadWallpapersFromStorage() {
+      // Check for fresh data
+      console.log("Checking for wallpapers in localStorage");
+      
       const savedWallpapers = localStorage.getItem('wallpapers');
       if (savedWallpapers) {
         try {
           const parsed = JSON.parse(savedWallpapers);
-          if (parsed && parsed.length > 0) {
+          if (parsed && Array.isArray(parsed) && parsed.length > 0) {
             console.log("Loaded wallpapers from localStorage:", parsed.length);
+            parsed.forEach(wallpaper => {
+              // Log each wallpaper to verify downloadUrl is present
+              if (wallpaper.downloadUrl) {
+                console.log(`Wallpaper ${wallpaper.title} has downloadUrl: ${wallpaper.downloadUrl}`);
+              }
+            });
+            
             // Ensure backwards compatibility with existing data
             const processedWallpapers = parsed.map(wallpaper => {
               // Make sure all wallpapers have required properties
