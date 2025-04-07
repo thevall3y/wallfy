@@ -1,10 +1,10 @@
 // api/categories.js
 
 // In-memory storage (will be reset when serverless function restarts)
-// In a production app, you would use a database
-let categoriesData = [];
+// Note: For a production app, you'd use a database
+let categoriesData = ["Nature", "Abstract", "Animals", "Space"];
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,17 +22,11 @@ export default async function handler(req, res) {
 
   // GET request - return all categories
   if (req.method === 'GET') {
-    try {
-      // Return the categories data
-      res.status(200).json({ 
-        success: true, 
-        categories: categoriesData,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      res.status(500).json({ success: false, error: 'Failed to fetch categories' });
-    }
+    return res.status(200).json({ 
+      success: true, 
+      categories: categoriesData,
+      timestamp: new Date().toISOString()
+    });
   } 
   // POST request - update categories
   else if (req.method === 'POST') {
@@ -46,7 +40,7 @@ export default async function handler(req, res) {
       // Update the categories data
       categoriesData = categories;
       
-      res.status(200).json({ 
+      return res.status(200).json({ 
         success: true, 
         message: 'Categories updated successfully',
         count: categories.length,
@@ -54,11 +48,11 @@ export default async function handler(req, res) {
       });
     } catch (error) {
       console.error('Error updating categories:', error);
-      res.status(500).json({ success: false, error: 'Failed to update categories' });
+      return res.status(500).json({ success: false, error: 'Failed to update categories' });
     }
   } 
   // Unsupported method
   else {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 } 

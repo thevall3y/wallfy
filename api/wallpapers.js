@@ -1,10 +1,54 @@
 import { v4 as uuidv4 } from 'uuid';
 
 // In-memory storage (will be reset when serverless function restarts)
-// In a production app, you would use a database
-let wallpapersData = [];
+// Note: For a production app, you'd use a database like MongoDB, Fauna, or Supabase
+let wallpapersData = [
+  // Nature wallpapers
+  {
+    id: 'nature-1',
+    title: 'Mountain Lake',
+    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+    category: 'Nature',
+    size: { width: 1080, height: 1920 },
+    downloads: 128,
+  },
+  {
+    id: 'nature-2',
+    title: 'Forest Path',
+    imageUrl: 'https://images.unsplash.com/photo-1511497584788-876760111969',
+    category: 'Nature',
+    size: { width: 1080, height: 1920 },
+    downloads: 95,
+  },
+  {
+    id: 'nature-3',
+    title: 'Autumn Colors',
+    imageUrl: 'https://images.unsplash.com/photo-1507783548227-544c3b8fc065',
+    category: 'Nature',
+    size: { width: 1080, height: 1920 },
+    downloads: 152,
+  },
+  // Abstract wallpapers
+  {
+    id: 'abstract-1',
+    title: 'Color Burst',
+    imageUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab',
+    category: 'Abstract',
+    size: { width: 1080, height: 1920 },
+    downloads: 243,
+  },
+  // Space wallpapers
+  {
+    id: 'space-1',
+    title: 'Galaxy Clusters',
+    imageUrl: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564',
+    category: 'Space',
+    size: { width: 1080, height: 1920 },
+    downloads: 328,
+  }
+];
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,17 +66,11 @@ export default async function handler(req, res) {
 
   // GET request - return all wallpapers
   if (req.method === 'GET') {
-    try {
-      // Return the wallpapers data
-      res.status(200).json({ 
-        success: true, 
-        wallpapers: wallpapersData,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Error fetching wallpapers:', error);
-      res.status(500).json({ success: false, error: 'Failed to fetch wallpapers' });
-    }
+    return res.status(200).json({ 
+      success: true, 
+      wallpapers: wallpapersData,
+      timestamp: new Date().toISOString()
+    });
   } 
   // POST request - update wallpapers
   else if (req.method === 'POST') {
@@ -46,7 +84,7 @@ export default async function handler(req, res) {
       // Update the wallpapers data
       wallpapersData = wallpapers;
       
-      res.status(200).json({ 
+      return res.status(200).json({ 
         success: true, 
         message: 'Wallpapers updated successfully',
         count: wallpapers.length,
@@ -54,11 +92,11 @@ export default async function handler(req, res) {
       });
     } catch (error) {
       console.error('Error updating wallpapers:', error);
-      res.status(500).json({ success: false, error: 'Failed to update wallpapers' });
+      return res.status(500).json({ success: false, error: 'Failed to update wallpapers' });
     }
   } 
   // Unsupported method
   else {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 } 
